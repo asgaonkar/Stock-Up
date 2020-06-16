@@ -21,14 +21,16 @@
                 <label for="stockName">Stock Name / Company</label>
                 <input type="text" class="form-control" id="stockName" placeholder="Stock Name">                
             </div>
+            <!-- Add Stock Button -->
             <button type="button" class="btn btn-primary" id="addStock">Add</button>
+            <!-- Reset Stock Button -->
             <button type="button" class="btn btn-secondary" id="resetStock">Reset</button>
         </form>
 
         <!-- Display Row -->
         <div class="row" id="displayRow">
             <!-- Stock List -->
-            <div class="col-5" id="stockList">
+            <div class="col-5" id="stockList" style="display: none;">
                 <h5 class="text-center">Stock List</h5>
                 <!-- Add LIs Dynamically -->
                 <ol>
@@ -37,6 +39,7 @@
             </div>
             <!-- Stock Chart -->
             <div class="col-7">
+                <!-- Chart Canvas -->
                 <canvas id="myChart" width="100%" height="75%"></canvas>
             </div>
         </div>

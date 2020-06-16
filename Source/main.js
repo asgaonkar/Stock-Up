@@ -45,6 +45,7 @@ $(document).ready(function () {
         myChart = "";
         $("#stockList ol").empty();
         clearInterval(timelyUpdate);
+        document.getElementById("stockList").style.display = "none";
     })
 
 });
@@ -125,6 +126,7 @@ function manageCalls(url){
 
             // Update Chart
             if (stockName.length == 1) {
+                document.getElementById("stockList").style.display = "block";
                 createChart();
                 // Start timely updates
                 timelyUpdate = setInterval(chartUpdate, 5000);         
@@ -148,6 +150,7 @@ function manageCalls(url){
     });    
 }
 
+// Update Chart
 function chartUpdate() {
     
     var iURL = ""
