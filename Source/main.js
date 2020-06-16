@@ -15,7 +15,8 @@ var tryAgain = ""
 
 // OnReady Call
 $(document).ready(function () {
-    // Ready       
+    // Ready
+    $("#stockName").focus();
 
     // on Enter - redirect to addStock
     $("#stockName").keyup(function (event) {
@@ -79,13 +80,51 @@ function createChart()
             }]
         },
         options: {
+            responsive: true,
+            maintainAspectRatio: false,
             scales: {
+                xAxes: [{
+                    barPercentage: 1
+                }],
                 yAxes: [{
                     ticks: {
-                        beginAtZero: true
+                        beginAtZero: true,                        
+                        // Include a dollar sign in the ticks
+                        callback: function (value, index, values) {
+                            return '$' + value;
+                        }                        
+                    },
+                    gridLines: {
+                        drawOnChartArea: false
                     }
                 }]
-            }
+            },
+            legend: {
+                labels: {
+                    // This more specific font property overrides the global property
+                    fontColor: 'black'                    
+                }
+            },
+            "animation": {
+                "duration": 2,
+                "onComplete": function () {
+                    var chartInstance = this.chart,
+                        ctx = chartInstance.ctx;                   
+                    
+                    ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, "bold", Chart.defaults.global.defaultFontFamily);                    
+                    
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+
+                    this.data.datasets.forEach(function (dataset, i) {
+                        var meta = chartInstance.controller.getDatasetMeta(i);
+                        meta.data.forEach(function (bar, index) {
+                            var data = dataset.data[index];                            
+                            ctx.fillText(data, bar._model.x, bar._model.y - 5);
+                        });
+                    });
+                }
+            }          
         }
     });
 }
