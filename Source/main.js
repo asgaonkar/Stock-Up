@@ -1,7 +1,9 @@
-// Stock Name List
-var stockName = []
-var stockPrice = []
-var myChart = ""
+// Global Variables
+var mapStock = {};
+var stockName = [];
+var stockPrice = [];
+var newStockPrice = [];
+var myChart;
 var currentPrice = 'c';
 var highPrice = 'h';
 var lowPrice = 'l';
@@ -12,30 +14,33 @@ var currentPriceValue = 0;
 var currStockName = "";
 var timelyUpdate = ""
 var tryAgain = ""
+var l = 0;
 
 // OnReady Call
 $(document).ready(function () {
-    // Ready
+    
+    // Ready, then Focus on Input
     $("#stockName").focus();
 
-    // on Enter - redirect to addStock
+
+    // on Enter in Input - redirect to addStock
     $("#stockName").keyup(function (event) {
         if (event.keyCode === 13) {            
             $("#addStock").click();            
         }
     })    
 
+
     // Add Stock Action Button
     $("#addStock").on("click", function () {
-        currStockName = document.getElementById('stockName').value.toUpperCase();
-        
-        // MakeURL for new Stock  
-        // Make an AJAX
+        currStockName = document.getElementById('stockName').value.toUpperCase();        
+        // MakeURL for new Stock and manage AJAX Call        
         if (currStockName.length >= 1){
-            var url = makeURL(currStockName);
+            var url = makeURL(currStockName);        
             manageCalls(url);        
-        }               
+        }
     });        
+
 
     // Reset the stocks
     $("#resetStock").on("click", function() {
@@ -51,8 +56,8 @@ $(document).ready(function () {
 
 });
 
-// Make Call
-function makeURL(ticker){
+// Make URL
+function makeURL(ticker){    
     return "https://finnhub.io/api/v1/quote?symbol="+ticker+"&token=brju1avrh5r9g3otf3dg"
 }
 
@@ -129,12 +134,36 @@ function createChart()
     });
 }
 
-// Make Ajax Call
-function sendAjaxRequest(url, successCallBackFn) {
+// Update Request AJAX Calls
+function sendAjaxRequestToUpdate(url, stockName) {
     $.ajax({
         type: "GET",
         url: url,
-        success: successCallBackFn,
+        success: function (response) {
+            // console.log(response);
+            newStockPrice.push(response[currentPrice]);
+            stockPrice[mapStock[stockName]] = response[currentPrice];
+            if (newStockPrice.length == l) {                
+                myChart.data.datasets[0].data = stockPrice;                                
+                myChart.update();
+            }
+        },
+        statusCode: {},
+        error: function () {
+            console.log("Unable to process your request.");
+            clearInterval(timelyUpdate);
+            tryAgain = true;
+        }
+    });
+}
+
+
+// Make Initial Ajax Calls
+function sendAjaxRequest(url, successcallbackfunction) {
+    $.ajax({
+        type: "GET",
+        url: url,
+        success: successcallbackfunction,
         statusCode: {},
         error: function () {
             console.log("Unable to process your request.");
@@ -144,7 +173,13 @@ function sendAjaxRequest(url, successCallBackFn) {
     });
 }
 
-// Manage response
+
+// Is Empty Function
+function isEmpty(obj) {
+    return Object.keys(obj).length === 0;
+}
+
+// Manage Initial responses
 function manageCalls(url){
     success = false;
     sendAjaxRequest(url, function(response) {
@@ -152,6 +187,11 @@ function manageCalls(url){
         if (response[currentPrice]==0){
             // Alert Wrong Ticker
             success=false;
+            $('#stockName').val("");
+        }
+        else if (isEmpty(response)) {
+            success = false;
+            $('#stockName').val("");
         }
         else{
             success = true;
@@ -161,7 +201,8 @@ function manageCalls(url){
         if (success == true) {            
             // Only on success
             stockName.push(currStockName);
-            stockPrice.push(currentPriceValue);            
+            stockPrice.push(currentPriceValue); 
+            mapStock[currStockName] = stockName.length - 1;           
 
             // Update Chart
             if (stockName.length == 1) {
@@ -171,6 +212,7 @@ function manageCalls(url){
                 timelyUpdate = setInterval(chartUpdate, 5000);         
             }
             else {
+                // If Error Occurs
                 if (tryAgain==true){
                     timelyUpdate = setInterval(chartUpdate, 5000);
                     tryAgain = false;
@@ -183,29 +225,23 @@ function manageCalls(url){
             var x = createCard(currStockName);
             $("#stockList ol").append(x);
 
-
+            // CLear Input Field
             $('#stockName').val("");
         }
     });    
 }
+
 
 // Update Chart
 function chartUpdate() {
     
     var iURL = ""
 
-    var newStockPrice = []
-
-    var l = stockName.length
+    newStockPrice = [];
+    l = stockName.length
 
     for(var i in stockName){        
         iURL = makeURL(stockName[i]);        
-        sendAjaxRequest(iURL, function (response) {
-            console.log(response);
-            newStockPrice.push(response[currentPrice]);
-            if (newStockPrice.length == l){
-                myChart.update();
-            }
-        });        
+        sendAjaxRequestToUpdate(iURL, stockName[i]);        
     }
 }
