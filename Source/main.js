@@ -35,9 +35,12 @@ $(document).ready(function () {
     $("#addStock").on("click", function () {
         currStockName = document.getElementById('stockName').value.toUpperCase();        
         // MakeURL for new Stock and manage AJAX Call        
-        if (currStockName.length >= 1){
+        if (currStockName.length >= 1 && !(currStockName in mapStock)){
             var url = makeURL(currStockName);        
             manageCalls(url);        
+        }
+        else{
+            $('#stockName').val("");
         }
     });        
 
@@ -143,7 +146,8 @@ function sendAjaxRequestToUpdate(url, stockName) {
             // console.log(response);
             newStockPrice.push(response[currentPrice]);
             stockPrice[mapStock[stockName]] = response[currentPrice];
-            if (newStockPrice.length == l) {                
+            if (newStockPrice.length == l) {         
+                console.log(stockPrice);       
                 myChart.data.datasets[0].data = stockPrice;                                
                 myChart.update();
             }
@@ -234,6 +238,8 @@ function manageCalls(url){
 
 // Update Chart
 function chartUpdate() {
+
+    console.log("Updating");
     
     var iURL = ""
 
